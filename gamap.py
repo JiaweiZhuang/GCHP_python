@@ -45,7 +45,7 @@ def tvmap(data,axis=None,title='',
     lon: 1D numpy array, optional
         The longitude range of the data. Assume 180W~180E by default
         
-    lat: 2D numpy array, optional
+    lat: 1D numpy array, optional
         The latitude range of the data. 
         Assume 90S~90N with half-polar cell by default
         
@@ -160,7 +160,7 @@ def tvplot(data,axis=None,title='',xlabel='x',ylabel='y',
     x: 1D numpy array, optional
         x range of the data. Use array index by default
         
-    y: 2D numpy array, optional
+    y: 1D numpy array, optional
         y range of the data. Use array index by default
         
     cmap: matplotlib colormap object, optional

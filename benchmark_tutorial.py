@@ -1,6 +1,8 @@
 
 # coding: utf-8
 
+# #### See benchmark_tutorial.py for the pure python code (which is just created by "jupyter nbconvert benchmark_tutorial.ipynb --to python")
+
 # In[1]:
 
 # import general modules
@@ -53,13 +55,15 @@ bm.plot_all()
 # Some pdfs will be generated in the outputdir specified before. 
 
 
-# #### They look like that:
-# - Just show one page for each file here, but they are multi-page pdfs containing all tracers in bm.tracername
+# #### View the output pdfs here
 # 
-# - For unknown reason, running inside this notebook will stretch the output plot a little bit. Run benchmark_tutorial.py instead. (which is just created by "jupyter nbconvert benchmark_tutorial.ipynb --to python" )
+# [wetdep_surf.pdf](outputfig/wetdep_surf.pdf)
 # 
-# <img src='outputfig/wetdep_surf.pdf'>
-# <img src='outputfig/wetdep_zonalmean.pdf'>
+# [wetdep_surf.pdf](outputfig/wetdep_500hpa.pdf)
+# 
+# [wetdep_180lat.pdf](outputfig/wetdep_180lat.pdf)
+# 
+# [wetdep_zonalmean.pdf](outputfig/wetdep_zonalmean.pdf)
 
 # In[5]:
 
@@ -103,6 +107,8 @@ bm.plot_zonal(pdfname='Only_two_tracer_strato.pdf',mean=True,levs=[32,71],tag='s
 # for more parameters, see help(bm.plot_layer), help(bm.plot_zonal)
 
 
-# #### The stratospheric one look like that:
-# Useful for test StratChem
-# <img src='outputfig/Only_two_tracer_strato.pdf'>
+# #### View the output pdfs here
+# 
+# [Only_two_tracer_level8.pdf](outputfig/Only_two_tracer_level8.pdf)
+# 
+# [Only_two_tracer_strato.pdf](outputfig/Only_two_tracer_strato.pdf)

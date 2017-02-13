@@ -274,13 +274,15 @@ class benchmark:
                     data2 /= 1e3
                     unit='ppmv'
                                   
+                # use the same scale for data1 and data2
+                range_data = np.max(data1)
                 # calculate the difference between two data sets
                 data_diff = data1-data2
                 range_diff=np.max(np.abs(data_diff))
                             
-                ga.tvmap(data1,axis=axarr[i,0],vmin=0,unit=unit,
+                ga.tvmap(data1,axis=axarr[i,0],vmin=0,vmax=range_data,unit=unit,
                          title=tracername+'; '+self.model1,ticks = False)
-                ga.tvmap(data2,axis=axarr[i,1],vmin=0,unit=unit,
+                ga.tvmap(data2,axis=axarr[i,1],vmin=0,vmax=range_data,unit=unit,
                          title=tracername+'; '+self.model2,ticks = False)
                 ga.tvmap(data_diff,axis=axarr[i,2],unit=unit,
                          title=self.model1+' — '+self.model2,ticks = False,
@@ -388,7 +390,9 @@ class benchmark:
                     data1 /= 1e3
                     data2 /= 1e3
                     unit='ppmv'
-                                
+                    
+                # use the same scale for data1 and data2
+                range_data = np.max(data1)
                 # calculate the difference between two data sets
                 data_diff = data1-data2
                 range_diff=np.max(np.abs(data_diff))
@@ -396,10 +400,10 @@ class benchmark:
                 xlabel='lat'
                 ylabel='level'
                             
-                ga.tvplot(data1,axis=axarr[i,0],vmin=0,unit=unit,
+                ga.tvplot(data1,axis=axarr[i,0],vmin=0,vmax=range_data,unit=unit,
                           x=self.lat,y=lev,xlabel=xlabel,ylabel=ylabel,
                           title=tracername+'; '+self.model1)
-                ga.tvplot(data2,axis=axarr[i,1],vmin=0,unit=unit,
+                ga.tvplot(data2,axis=axarr[i,1],vmin=0,vmax=range_data,unit=unit,
                           x=self.lat,y=lev,xlabel=xlabel,ylabel=ylabel,
                           title=tracername+'; '+self.model2)
                 ga.tvplot(data_diff,axis=axarr[i,2],unit=unit,

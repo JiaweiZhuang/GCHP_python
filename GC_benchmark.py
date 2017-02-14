@@ -214,8 +214,53 @@ class benchmark:
         fh.close() 
         
         self.model2=tag # for plot names
+        
+    def getdata0(self,filename,
+                 prefix='SPC_',time=0,flip=False):
+        '''
+        Get initial condition, with the tracerlist got from getdata1 
+        Must run getdata1 first. data0 will match data1's tracer sequence. 
+        
+        Parameters
+        ----------
+        see getdata1. The only difference is not requiring tracerlist input
+        
+        Impoertant Returns
+        ----------        
+        self.data0: list of 3D numpy arrays
+            3D (lev,lat,lon) data at one time slice.
+        
+        '''
+        if self.isData1 == False:
+            raise ValueError('must run getdata1 first')
+            
+        # open the netcdf file with read-only mode
+        fh = Dataset(filename, "r", format="NETCDF4")
+            
+        # check dimension 
+        if self.Nlon != len(fh['lon'][:]):
+            raise ValueError('lon dimension does not match')
+        if self.Nlat != len(fh['lat'][:]):
+            raise ValueError('lat dimension does not match')
+        if self.Nlev != len(fh['lev'][:]):
+            raise ValueError('lev dimension does not match')
+
+        # initialize an empty list to hold the data.
+        self.data0=[]
+            
+        for tracer in self.tracername:
+            # expand, for example, 'O3' to 'SPC_O3'
+            varname=prefix+tracer
+            # extract the data directly by the key
+            data=fh[varname][time,:,:,:]
+    
+            if flip: data=data[::-1,:,:]
+            self.data0.append(data)
+            
+        # always remember to close the NC file
+        fh.close() 
       
-    def plot_layer(self,lev=0,
+    def plot_layer(self,lev=0,plot_change=False,switch_scale=False,
                    pdfname='default_layerplot.pdf',tag='',rows=3):
         '''
         Compare self.data1 and self.data2 on a specific level. Loop over all
@@ -235,6 +280,22 @@ class benchmark:
         rows: integer, optional
             How many rows on a page. Although the page size will be 
             adjusted accordingly, 3 rows look better.
+            
+        plot_change: logical, optional
+            If set to True, then plot the change with respect to the initial
+            condition (i.e. self.data0), rather than the original field.
+            In this case, self.getdata0 must be executed before.
+        
+        switch_scale: logical, optional
+            By default, the scale of data2 is used for both data1 and data2.
+            This is because model2 is often regarded as the more correct one
+            (the one for reference), so if model1 goes crazy, the color scale 
+            will still make sense.
+            
+            If set to True, then use the scale of data1 instead. This is often
+            combined with plot_change=True to more clearly show the regridding
+            error.
+            
     
         Important Returns
         ----------
@@ -265,25 +326,49 @@ class benchmark:
                 data2 = self.data2[i_tracer][lev,:,:]*1e9
                 unit='ppbv'
                 
-                if np.max(data1) < 1e-1 :
+                if plot_change:
+                    # plot the change with respect to the initial condition,
+                    # instead to the original field
+                    data0 = self.data0[i_tracer][lev,:,:]*1e9
+                    data1 -= data0
+                    data2 -= data0
+                    cmap=plt.cm.RdBu_r
+                    
+                else:
+                    cmap=ga.WhGrYlRd
+                
+                if np.max(np.abs(data1)) < 1e-1 :
                     data1 *= 1e3
                     data2 *= 1e3
                     unit='pptv'             
-                elif np.max(data1) > 1e3 :
+                elif np.max(np.abs(data1)) > 1e3 :
                     data1 /= 1e3
                     data2 /= 1e3
                     unit='ppmv'
                                   
                 # use the same scale for data1 and data2
-                range_data = np.max(data1)
+                # use the scale of data2 by default.
+                if switch_scale:
+                    range_data = np.max(np.abs(data1))
+                else:
+                    range_data = np.max(np.abs(data2))
                 # calculate the difference between two data sets
                 data_diff = data1-data2
                 range_diff=np.max(np.abs(data_diff))
+                
+                if plot_change:
+                    vmin = -range_data
+                    vmax = range_data
+                    title= tracername+' change; '
+                else:
+                    vmin = 0
+                    vmax = range_data
+                    title= tracername+'; '
                             
-                ga.tvmap(data1,axis=axarr[i,0],vmin=0,vmax=range_data,unit=unit,
-                         title=tracername+'; '+self.model1,ticks = False)
-                ga.tvmap(data2,axis=axarr[i,1],vmin=0,vmax=range_data,unit=unit,
-                         title=tracername+'; '+self.model2,ticks = False)
+                ga.tvmap(data1,axis=axarr[i,0],vmin=vmin,vmax=vmax,unit=unit,
+                         cmap=cmap,title=title+self.model1,ticks = False)
+                ga.tvmap(data2,axis=axarr[i,1],vmin=vmin,vmax=vmax,unit=unit,
+                         cmap=cmap,title=title+self.model2,ticks = False)
                 ga.tvmap(data_diff,axis=axarr[i,2],unit=unit,
                          title=self.model1+' — '+self.model2,ticks = False,
                          cmap=plt.cm.RdBu_r,vmax=range_diff,vmin=-range_diff)
@@ -305,6 +390,7 @@ class benchmark:
         print(pdfname,' finished')
         
     def plot_zonal(self,mean=False,ilon=0,levs=None,
+                   plot_change=False,switch_scale=False,
                    pdfname='default_zonalplot.pdf',tag='',rows=3):
         
         '''
@@ -330,6 +416,21 @@ class benchmark:
         rows: integer, optional
             How many rows on a page. Although the page size will be 
             adjusted accordingly, 3 rows look better.
+            
+        plot_change: logical, optional
+            If set to True, then plot the change with respect to the initial
+            condition (i.e. self.data0), rather than the original field.
+            In this case, self.getdata0 must be executed before.
+        
+        switch_scale: logical, optional
+            By default, the scale of data2 is used for both data1 and data2.
+            This is because model2 is often regarded as the more correct one
+            (the one for reference), so if model1 goes crazy, the color scale 
+            will still make sense.
+            
+            If set to True, then use the scale of data1 instead. This is often
+            combined with plot_change=True to more clearly show the regridding
+            error.
     
         Important Returns
         ----------
@@ -358,6 +459,16 @@ class benchmark:
                 tracername = self.tracername[i_tracer]
                 data1_3D = self.data1[i_tracer][:]*1.0
                 data2_3D = self.data2[i_tracer][:]*1.0
+                                     
+                if plot_change:
+                    # plot the change with respect to the initial condition,
+                    # instead to the original field
+                    data0_3D = self.data0[i_tracer][:]*1.0
+                    data1_3D -= data0_3D
+                    data2_3D -= data0_3D
+                    cmap=plt.cm.RdBu_r
+                else:
+                    cmap=ga.WhGrYlRd
                 
                 # get limited levels if requested
                 if levs is None:
@@ -392,20 +503,33 @@ class benchmark:
                     unit='ppmv'
                     
                 # use the same scale for data1 and data2
-                range_data = np.max(data1)
+                # use the scale of data2 by default.
+                if switch_scale:
+                    range_data = np.max(np.abs(data1))
+                else:
+                    range_data = np.max(np.abs(data2))
                 # calculate the difference between two data sets
                 data_diff = data1-data2
                 range_diff=np.max(np.abs(data_diff))
                 
+                if plot_change:
+                    vmin = -range_data
+                    vmax = range_data
+                    title= tracername+' change; '
+                else:
+                    vmin = 0
+                    vmax = range_data
+                    title= tracername+'; '
+                         
                 xlabel='lat'
                 ylabel='level'
                             
-                ga.tvplot(data1,axis=axarr[i,0],vmin=0,vmax=range_data,unit=unit,
-                          x=self.lat,y=lev,xlabel=xlabel,ylabel=ylabel,
-                          title=tracername+'; '+self.model1)
-                ga.tvplot(data2,axis=axarr[i,1],vmin=0,vmax=range_data,unit=unit,
-                          x=self.lat,y=lev,xlabel=xlabel,ylabel=ylabel,
-                          title=tracername+'; '+self.model2)
+                ga.tvplot(data1,axis=axarr[i,0],vmin=vmin,vmax=vmax,unit=unit,
+                          cmap=cmap,x=self.lat,y=lev,xlabel=xlabel,ylabel=ylabel,
+                          title=title+self.model1)
+                ga.tvplot(data2,axis=axarr[i,1],vmin=vmin,vmax=vmax,unit=unit,
+                          cmap=cmap,x=self.lat,y=lev,xlabel=xlabel,ylabel=ylabel,
+                          title=title+self.model2)
                 ga.tvplot(data_diff,axis=axarr[i,2],unit=unit,
                           x=self.lat,y=lev,xlabel=xlabel,ylabel=ylabel,
                           title=self.model1+' — '+self.model2,
@@ -439,13 +563,19 @@ class benchmark:
         print(pdfname,' finished')
         
         
-    def plot_all(self,plot_surf=True,plot_500hpa=True,plot_zonal=True):
+    def plot_all(self,plot_surf=True,plot_500hpa=True,plot_zonal=True,
+                 plot_change=False):
         '''
         Just to wrap several plot_layer and plot_zonal calls for convenience.
         
         Parameters
         ----------
-        plot_*: logical, optional
+        plot_change: logical, optional
+            If set to True, then plot the change with respect to the initial
+            condition (i.e. self.data0), rather than the original field.
+            In this case, self.getdata0 must be executed before.
+        
+        plot_surf,plot_500hpa,plot_zonal: logical, optional
             plot that feature or not. Default is to plot everything.
         
         Important Returns
@@ -453,13 +583,26 @@ class benchmark:
             Several pdf files.
         '''
         
+        if plot_change:
+            switch_scale=True # use data1's scale when plotting change
+            tag='_change' # the file name should be slightly different
+        else:
+            switch_scale=False
+            tag=''
+        
         if plot_surf:
-            self.plot_layer(pdfname=self.shortname+'_surf.pdf',lev=0,tag='surface')
+            self.plot_layer(pdfname=self.shortname+tag+'_surf.pdf',lev=0,tag='surface',
+                            switch_scale=switch_scale,plot_change=plot_change)
         if plot_500hpa:
-            self.plot_layer(pdfname=self.shortname+'_500hpa.pdf',lev=22,tag='500hpa')
+            self.plot_layer(pdfname=self.shortname+tag+'_500hpa.pdf',lev=22,tag='500hpa',
+                            switch_scale=switch_scale,plot_change=plot_change)
         if plot_zonal:
-            self.plot_zonal(pdfname=self.shortname+'_180lat.pdf',
-                            ilon=0,levs=[0,20],tag='180lat')
-            self.plot_zonal(pdfname=self.shortname+'_zonalmean.pdf',
-                            mean=True,levs=[0,20],tag='zonal mean')
+            self.plot_zonal(pdfname=self.shortname+tag+'_180lat.pdf',
+                            ilon=0,levs=[0,20],tag='180lat',
+                            switch_scale=switch_scale,plot_change=plot_change)
+            self.plot_zonal(pdfname=self.shortname+tag+'_zonalmean.pdf',
+                            mean=True,levs=[0,20],tag='zonal mean',
+                            switch_scale=switch_scale,plot_change=plot_change)
+            
+
                 

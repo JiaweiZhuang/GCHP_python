@@ -21,6 +21,9 @@ warnings.filterwarnings('ignore')
 # A simple benchmark example. 
 
 # the output files from model1 and model2
+# Typically, model2 is regarded as a reference (e.g. old version), 
+# and model1 is what you want to examine.
+# the sequence will affect the choice of the color scale.
 filename1='sample_data/GCHP.wetdep.regrid.20130702.nc4' # GCHP output
 filename2='sample_data/GEOSCHEM_Diagnostics_Hrly.201307020000.nc' # GC-classic NC diag
 
@@ -59,7 +62,7 @@ bm.plot_all()
 # 
 # [wetdep_surf.pdf](outputfig/wetdep_surf.pdf)
 # 
-# [wetdep_surf.pdf](outputfig/wetdep_500hpa.pdf)
+# [wetdep_500hpa.pdf](outputfig/wetdep_500hpa.pdf)
 # 
 # [wetdep_180lat.pdf](outputfig/wetdep_180lat.pdf)
 # 
@@ -67,11 +70,45 @@ bm.plot_all()
 
 # In[5]:
 
+# For a single component test, if makes more sense to 
+# plot the change in the tracer field instead of the tracer field itself.
+
+# here we extract 5 tracers from the standard restart file to make the size small
+# (by "ncks -v SPC_NO,SPC_O3,SPC_NIT,SPC_HNO3,SPC_CH2O gcc_restart.nc gcc_restart_5tracer.nc")
+# Indeed it also works with the standard restart file
+filename0='sample_data/gcc_restart_5tracer.nc'
+
+# you don't need to run getdata0 if you don't need to plot the change
+bm.getdata0(filename0,prefix='SPC_',flip=False)
+print(len(bm.data0)) # now bm holds the initial condition
+
+
+# In[6]:
+
+# set plot_change to True to plot the change to initial condition.
+# make sure data0 has already been read in.
+bm.plot_all(plot_change=True) 
+
+
+# #### View the output pdfs here
+# 
+# [wetdep_change_surf.pdf](outputfig/wetdep_change_surf.pdf)
+# 
+# [wetdep_change_500hpa.pdf](outputfig/wetdep_change_500hpa.pdf)
+# 
+# [wetdep_change_180lat.pdf](outputfig/wetdep_change_180lat.pdf)
+# 
+# [wetdep_change_zonalmean.pdf](outputfig/wetdep_change_zonalmean.pdf)
+# 
+# - Here we use GCC's 4x5 initial condition, so the "change" in O3 and NO is just the regridding error, because they are not removed by wet deposition. To make a fair comparision, we might use a finer grid as input and final output.
+
+# In[7]:
+
 # delete the benchmark object for the second example.
 del bm
 
 
-# In[6]:
+# In[8]:
 
 # Now do the benchmark with more steps, to get more control
 
@@ -93,7 +130,7 @@ print(len(bm.data1))
 print(len(bm.data2))
 
 
-# In[7]:
+# In[9]:
 
 # with lower-level methods, you can specify the output filename. 
 # Files will still be in the outputdir specified before, but now the shortname doesn't matter
@@ -104,6 +141,20 @@ bm.plot_layer(pdfname='Only_two_tracer_level8.pdf',lev=7,tag='the 8th level')
 # specify a certain range of layers to plot zonal profile 
 bm.plot_zonal(pdfname='Only_two_tracer_strato.pdf',mean=True,levs=[32,71],tag='stratosphere zonal mean')
 
+# plot the change if you've read the initial condition.
+filename0='sample_data/gcc_restart_5tracer.nc'
+bm.getdata0(filename0)
+bm.plot_zonal(pdfname='Only_two_tracer_change.pdf',plot_change=True,switch_scale=True,
+              ilon=0,levs=[0,15],tag='lower troposphere 180lon')
+'''
+note: 
+when plotting the change, it is recommended to set switch_scale to True, 
+to more clearly show the regridding error in GCHP. 
+It ensures GCHP's data range is used for the common color bar.
+
+when plotting the original field, GC-classic(model2)'s color scale is used,
+so the plot will still make sense it model1 goes crazy.
+'''
 # for more parameters, see help(bm.plot_layer), help(bm.plot_zonal)
 
 
@@ -112,3 +163,5 @@ bm.plot_zonal(pdfname='Only_two_tracer_strato.pdf',mean=True,levs=[32,71],tag='s
 # [Only_two_tracer_level8.pdf](outputfig/Only_two_tracer_level8.pdf)
 # 
 # [Only_two_tracer_strato.pdf](outputfig/Only_two_tracer_strato.pdf)
+# 
+# [Only_two_tracer_change.pdf](outputfig/Only_two_tracer_change.pdf)

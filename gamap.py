@@ -15,11 +15,13 @@ REVISION HISTORY:
 """
 import matplotlib.pyplot as plt
 import numpy as np
+import os
 from mpl_toolkits.basemap import Basemap
 from matplotlib.colors import ListedColormap
 
 # get gamap's WhGrYlRd color scheme from file
-WhGrYlRd_scheme = np.genfromtxt('WhGrYlRd.txt',delimiter=' ')
+current_dir = os.path.dirname(os.path.abspath(__file__))
+WhGrYlRd_scheme = np.genfromtxt(current_dir+'/WhGrYlRd.txt',delimiter=' ')
 WhGrYlRd = ListedColormap(WhGrYlRd_scheme/255.0)
 
 def tvmap(data,axis=None,title='',

@@ -597,8 +597,8 @@ class benchmark:
             self.plot_layer(pdfname=self.shortname+tag+'_500hpa.pdf',lev=22,tag='500hpa',
                             switch_scale=switch_scale,plot_change=plot_change)
         if plot_zonal:
-            self.plot_zonal(pdfname=self.shortname+tag+'_180lat.pdf',
-                            ilon=0,levs=[0,20],tag='180lat',
+            self.plot_zonal(pdfname=self.shortname+tag+'_180lon.pdf',
+                            ilon=0,levs=[0,20],tag='180lon',
                             switch_scale=switch_scale,plot_change=plot_change)
             self.plot_zonal(pdfname=self.shortname+tag+'_zonalmean.pdf',
                             mean=True,levs=[0,20],tag='zonal mean',

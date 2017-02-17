@@ -64,7 +64,7 @@ bm.plot_all()
 # 
 # [wetdep_500hpa.pdf](outputfig/wetdep_500hpa.pdf)
 # 
-# [wetdep_180lat.pdf](outputfig/wetdep_180lat.pdf)
+# [wetdep_180lon.pdf](outputfig/wetdep_180lon.pdf)
 # 
 # [wetdep_zonalmean.pdf](outputfig/wetdep_zonalmean.pdf)
 
@@ -96,7 +96,7 @@ bm.plot_all(plot_change=True)
 # 
 # [wetdep_change_500hpa.pdf](outputfig/wetdep_change_500hpa.pdf)
 # 
-# [wetdep_change_180lat.pdf](outputfig/wetdep_change_180lat.pdf)
+# [wetdep_change_180lon.pdf](outputfig/wetdep_change_180lon.pdf)
 # 
 # [wetdep_change_zonalmean.pdf](outputfig/wetdep_change_zonalmean.pdf)
 # 
